@@ -1,0 +1,24 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "ecmafeatures": {
+        "jsx": true,
+        "modules": true
+    },
+    "extends": "standard",
+    "plugins": [
+        "standard",
+        "promise",
+        "react",
+        "chai-friendly"
+    ],
+    "rules": {
+        "indent": ["error", 4],
+        "react/jsx-uses-vars": 2,
+        "react/jsx-uses-react": 2,
+        "react/react-in-jsx-scope": 2,
+        "chai-friendly/no-unused-expressions": 2
+    }
+}
