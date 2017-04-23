@@ -3,7 +3,7 @@ import { describe, it, beforeEach } from 'mocha'
 import { useFakeXMLHttpRequest } from 'sinon'
 import * as apiHelpers from 'Helpers/api.helper'
 
-describe('[Client] Api helpers', () => {
+describe('Api helpers', () => {
     beforeEach(() => {
         global.XMLHttpRequest = useFakeXMLHttpRequest()
     })

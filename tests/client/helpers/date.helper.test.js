@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import * as dateHelpers from '../../src/helpers/date.helper'
+import * as dateHelpers from 'Helpers/date.helper'
 
 describe('date helpers', () => {
     describe('normalizeDate()', () => {
