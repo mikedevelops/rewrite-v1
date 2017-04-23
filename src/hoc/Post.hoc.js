@@ -1,38 +1,42 @@
 import React, { Component } from 'react'
 import Post from 'Components/Post'
-import { request } from 'Helpers/xhr.helper'
+import { apiGet } from 'Helpers/api.helper'
 
 export default class PostHoc extends Component {
     constructor () {
         super()
-        this.state = {
-            loading: true
-        }
+        this.state = {}
     }
 
     componentWillMount () {
-        const { match } = this.props
-        return request(match.url, 'GET', { 'Content-Type': 'application/json' })
-        .then(res => {
-            this.post = JSON.parse(res)
-            this.setState({ loading: false })
+        this.getPost()
+    }
+
+    /**
+     * Get post data from API
+     */
+    getPost () {
+        apiGet(this.props.match.url.slice(1))
+        .then(post => {
+            this.setState({ post: JSON.parse(post) })
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+            throw new Error('unable to get post -> ' + err)
+        })
     }
 
     render () {
-        const { title, date, author, html } = this.post
         return (
             <div className="hoc">
             {
-                this.state.loading
-                ? <pre>loading...</pre>
-                : <Post
-                    title={title}
-                    date={date}
-                    author={author}
-                    html={html}
+                this.state.post
+                ? <Post
+                    title={this.state.post.meta.title}
+                    date={this.state.post.meta.date}
+                    author={this.state.post.meta.author}
+                    html={this.state.post.html}
                 />
+                : <pre className="loading">loading...</pre>
             }
             </div>
         )
