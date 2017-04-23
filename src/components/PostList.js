@@ -6,12 +6,12 @@ export function getPostUri (title) {
     return title.replace(' ', '-')
 }
 
-export function PostListing ({ title, author, date, post, id }) {
+export function PostListing ({ title, author, date, id }) {
     return (
         <div className="post-listing">
             <Link
                 className="post-listing__link"
-                to={`post/${id}/${getPostUri(title)}`}>
+                to={`/post/${id}/${getPostUri(title)}`}>
                 <h2 className="post-listing__title">{ title }</h2>
                 <div className="post-listing__meta">
                     <p className="post-listing__date">
@@ -33,8 +33,7 @@ export default class PostList extends Component {
                 id={post.id}
                 title={post.title}
                 author={post.author}
-                date={post.date}
-                post={post.post}/>
+                date={post.date}/>
         })
     }
 
