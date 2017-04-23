@@ -1,11 +1,9 @@
 const path = require('path')
 const Html = require('html-webpack-plugin')
-const Copy = require('copy-webpack-plugin')
-
+const BuildPosts = require('./build/BuildPosts')
 const src = path.join(__dirname, 'src')
 const www = path.join(__dirname, 'www')
-
-console.log(path.resolve(src, 'hoc'))
+const posts = path.join(__dirname, 'posts')
 
 module.exports = {
     entry: path.join(src, 'index.js'),
@@ -24,35 +22,20 @@ module.exports = {
                         presets: ['env', 'es2015', 'react']
                     }
                 }
-            },
-            {
-                test: /\.md$/,
-                use: {
-                    loader: 'file-loader',
-                    options: {
-                        name: 'posts/[name].[ext]'
-                    }
-                }
-            },
-            {
-                test: /\.json$/,
-                use: {
-                    loader: 'file-loader',
-                    options: {
-                        name: 'posts/[name].[ext]'
-                    }
-                }
             }
         ]
     },
     resolve: {
         alias: {
             App: __dirname,
+            Build: path.resolve(__dirname, 'build'),
             Components: path.resolve(src, 'components'),
             Helpers: path.resolve(src, 'helpers'),
+            ServerHelpers: path.resolve(__dirname, 'server/helpers'),
             Hoc: path.resolve(src, 'hoc'),
             Routes: path.resolve(src, 'routes'),
-            Assets: path.resolve(src, 'assets')
+            Assets: path.resolve(src, 'assets'),
+            Tests: path.resolve(__dirname, 'tests')
         }
     },
     devtool: 'source-maps',
@@ -61,6 +44,6 @@ module.exports = {
     },
     plugins: [
         new Html({ template: path.join(src, 'index.ejs') }),
-        new Copy([{ from: 'posts', to: 'posts' }])
+        new BuildPosts({ src: posts })
     ]
 }
