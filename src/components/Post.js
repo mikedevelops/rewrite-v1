@@ -1,7 +1,7 @@
 import React from 'react'
 
-export default function Post ({ title, date, author, content }) {
-    const html = { __html: content }
+export default function Post ({ title, date, author, html }) {
+    const content = { __html: html }
     return (
         <div className="post">
             <h1 className="post__title">{ title }</h1>
@@ -11,7 +11,7 @@ export default function Post ({ title, date, author, content }) {
             </div>
             <div
                 className="post__content markdown"
-                dangerouslySetInnerHTML={html}
+                dangerouslySetInnerHTML={content}
             />
         </div>
     )
