@@ -1,9 +1,9 @@
-import React from 'react'
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import { shallow } from 'enzyme'
-import Post from 'Components/Post'
+require('mocha')
+require('chai')
 
+const React = require('react')
+const { shallow } = require('enzyme')
+const Post = require('Components/Post')
 const postData = {
     title: 'foo',
     author: 'foo',
@@ -18,7 +18,7 @@ describe('<Post/>', () => {
             title={title}
             author={author}
             date={date}
-            content={content}/>)
+            html={content}/>)
 
     it('should render a title', () => {
         expect(post.contains(

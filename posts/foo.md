@@ -1,5 +1,4 @@
 ---
-id: 1
 title: example
 author: michael smart
 date: 1491061453895
