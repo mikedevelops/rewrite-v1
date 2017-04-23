@@ -5,19 +5,7 @@ import { apiGet } from 'Helpers/api.helper'
 export default class PostListHoc extends Component {
     constructor () {
         super()
-        this.state = {
-            loading: true
-        }
-    }
-
-    /**
-     * Update if the loading state has changed
-     * @param  {Object} props
-     * @param  {Object} state
-     * @return {Boolean}
-     */
-    componentWillUpdate (props, state) {
-        return this.state.loading !== state.loading
+        this.state = {}
     }
 
     /**
@@ -32,10 +20,11 @@ export default class PostListHoc extends Component {
      * @return {Array} posts
      */
     getPosts () {
-        return apiGet('posts')
+        apiGet('posts')
         .then(posts => {
-            this.posts = JSON.parse(posts)
-            this.setState({ loading: false })
+            this.setState({
+                posts: JSON.parse(posts)
+            })
         })
         .catch(err => {
             throw new Error('could not get posts -> ' + err)
@@ -46,9 +35,9 @@ export default class PostListHoc extends Component {
         return (
             <div className="hoc">
             {
-                this.state.loading
-                ? <pre>loading...</pre>
-                : <PostList posts={this.posts}/>
+                this.state.posts
+                ? <PostList posts={this.state.posts}/>
+                : <pre className="loading">loading...</pre>
             }
             </div>
         )
