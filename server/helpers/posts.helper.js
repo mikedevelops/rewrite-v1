@@ -34,6 +34,8 @@ function getAllPosts (postDirectory) {
  * @param post
  */
 function getFullPostDataObject (postDirectory, post) {
+    console.log(postDirectory, post)
+
     const location = path.join(postDirectory, post)
     const { meta, html } = marked(fs.readFileSync(location, 'utf-8'))
     return { meta, html }

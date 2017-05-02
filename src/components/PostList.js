@@ -30,10 +30,11 @@ export default class PostList extends Component {
         return this.props.posts.map(post => {
             return <PostListing
                 key={post.date}
-                id={post.id}
+                id={post._id}
                 title={post.title}
                 author={post.author}
-                date={post.date}/>
+                date={post.date}
+            />
         })
     }
 

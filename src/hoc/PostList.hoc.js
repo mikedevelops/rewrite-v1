@@ -21,14 +21,12 @@ export default class PostListHoc extends Component {
      */
     getPosts () {
         apiGet('posts')
-        .then(posts => {
-            this.setState({
-                posts: JSON.parse(posts)
+            .then(posts => {
+                this.setState({ posts: JSON.parse(posts) })
             })
-        })
-        .catch(err => {
-            throw new Error('could not get posts -> ' + err)
-        })
+            .catch(err => {
+                throw new Error('could not get posts -> ' + err)
+            })
     }
 
     render () {
