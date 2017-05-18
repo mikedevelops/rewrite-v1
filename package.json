@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "client": "webpack-dev-server --hot --inline",
+    "start": "webpack-dev-server --hot --inline",
+    "publish": "export NODE_ENV=production && webpack -p",
     "server": "nodemon server.js",
     "test": "export NODE_ENV=test && eslint src/**/*.js && mocha --require babel-core/register tests/**/*.js --watch"
   },
   "dependencies": {
     "express": "^4.15.2",
+    "md5": "^2.2.1",
     "meta-marked": "^0.4.2",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
