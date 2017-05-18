@@ -1,9 +1,9 @@
 const path = require('path')
 const Html = require('html-webpack-plugin')
-const BuildPosts = require('./build/BuildPosts')
+const Manifest = require('./build/PostManifest')
+const { version } = require('./package.json')
 const src = path.join(__dirname, 'src')
 const www = path.join(__dirname, 'www')
-const posts = path.join(__dirname, 'posts')
 
 module.exports = {
     entry: path.join(src, 'index.js'),
@@ -28,6 +28,7 @@ module.exports = {
     resolve: {
         alias: {
             App: __dirname,
+            Utils: path.resolve(__dirname, 'utils'),
             Build: path.resolve(__dirname, 'build'),
             Components: path.resolve(src, 'components'),
             Helpers: path.resolve(src, 'helpers'),
@@ -44,6 +45,9 @@ module.exports = {
     },
     plugins: [
         new Html({ template: path.join(src, 'index.ejs') }),
-        new BuildPosts({ src: posts })
+        new Manifest({
+            posts: path.join(__dirname, 'posts'),
+            manifest: path.join(__dirname, 'post-manifest.json')
+        }, new Date(), version, process.env.NODE_ENV)
     ]
 }
