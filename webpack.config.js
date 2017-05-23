@@ -4,6 +4,9 @@ const Manifest = require('./build/PostManifest')
 const { version } = require('./package.json')
 const src = path.join(__dirname, 'src')
 const www = path.join(__dirname, 'www')
+const posts = process.env.BENCHMARK !== 'true'
+    ? path.join(__dirname, 'posts')
+    : path.join(__dirname, 'benchmark/posts')
 
 module.exports = {
     entry: path.join(src, 'index.js'),
@@ -46,7 +49,7 @@ module.exports = {
     plugins: [
         new Html({ template: path.join(src, 'index.ejs') }),
         new Manifest({
-            posts: path.join(__dirname, 'posts'),
+            posts: posts,
             manifest: path.join(__dirname, 'post-manifest.json')
         }, new Date(), version, process.env.NODE_ENV)
     ]
