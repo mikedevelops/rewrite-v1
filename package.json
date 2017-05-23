@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --hot --inline",
-    "publish": "export NODE_ENV=production && webpack -p",
+    "clean": "rm -rf ./www",
+    "start": "npm run clean && webpack-dev-server --hot --inline",
+    "publish": "npm run clean && export NODE_ENV=production && webpack -p",
     "server": "nodemon server.js",
-    "test": "export NODE_ENV=test && eslint src/**/*.js && mocha --require babel-core/register tests/**/*.js --watch"
+    "test": "export NODE_ENV=test && eslint src/**/*.js && mocha --require babel-core/register tests/**/*.js --watch",
+    "benchmark": "export BENCHMARK=true && rm -rf ./benchmark && ./bin/seed-posts.sh && npm run publish && rm -rf ./benchmark"
   },
   "dependencies": {
     "express": "^4.15.2",
-    "md5": "^2.2.1",
+    "hashids": "^1.1.1",
     "meta-marked": "^0.4.2",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
