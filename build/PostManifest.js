@@ -7,12 +7,6 @@ const defaults = {
     manifest: path.resolve(__dirname, '../post-manifest.json')
 }
 
-// todo - unable to get reliable file creation time in node,
-// this is an issue as we need to determine what qualifies as a new file
-// if we can't determine what constitutes a new file, we are unable to reliably
-// merge new revisions with old posts, there is nothing to indicate (apart from filename)
-// that they are the same
-
 class PostManifest {
     constructor (options, date, appVersion, env = 'development') {
         this.env = env
@@ -20,16 +14,6 @@ class PostManifest {
         this.options = Object.assign({}, defaults, options)
         this.time = date
         this.manifest = this.getManifest()
-        this.modifiedPosts = this.getModifiedPosts()
-        this.newVersion = this.env === 'production' ? this.bumpManifestVersion() : this.manifest.version
-        this.newManifest = Object.assign({}, this.manifest,
-            {
-                app: appVersion,
-                version: this.newVersion,
-                lastPublished: this.env === 'production' ? this.time : this.manifest.lastPublished,
-                posts: postHelpers.mergePostObjectArrays(this.manifest.posts, this.modifiedPosts)
-            }
-        )
     }
 
     /**
@@ -73,16 +57,7 @@ class PostManifest {
                 const newPost = postHelpers.createPostObject(post, postFile)
 
                 if (!existingPost) {
-                    modPosts.push({
-                        id: newPost.id,
-                        file: newPost.file,
-                        title: newPost.title,
-                        author: newPost.author,
-                        createdAt: newPost.createdAt,
-                        lastModified: newPost.lastModified,
-                        archived: newPost.archived,
-                        lead: newPost.lead
-                    })
+                    modPosts.push(newPost)
                 } else if (mtime > Date.parse(this.manifest.lastPublished)) {
                     modPosts.push(postHelpers.mergePostObjects(existingPost, newPost, this.time))
                 }
@@ -104,9 +79,10 @@ class PostManifest {
 
     /**
      * Write manifest to file
+     * @param {Object} manifest
      */
-    writeManifest () {
-        fs.writeFileSync(this.options.manifest, JSON.stringify(this.newManifest, null, 4), 'utf-8')
+    writeManifest (manifest) {
+        fs.writeFileSync(this.options.manifest, JSON.stringify(manifest, null, 4), 'utf-8')
     }
 
     /**
@@ -115,18 +91,21 @@ class PostManifest {
      */
     apply (compiler) {
         compiler.plugin('done', () => {
+            this.modifiedPosts = this.getModifiedPosts()
+            this.newVersion = this.env === 'production' ? this.bumpManifestVersion() : this.manifest.version
+            this.newManifest = Object.assign({}, this.manifest,
+                {
+                    app: this.appVersion,
+                    version: this.newVersion,
+                    lastPublished: this.env === 'production' ? this.time : this.manifest.lastPublished,
+                    posts: postHelpers.mergePostObjectArrays(this.manifest.posts, this.modifiedPosts)
+                }
+            )
             this.newManifest.posts.forEach(post => {
-                postHelpers.writePost({
-                    id: post.id,
-                    createdAt: post.createdAt,
-                    lead: post.lead,
-                    title: post.title,
-                    author: post.author,
-                    content: post.html
-                }, path.join(compiler.outputPath, 'posts'))
+                postHelpers.writePost(post, path.join(compiler.outputPath, 'posts'))
             })
 
-            this.writeManifest()
+            this.writeManifest(this.newManifest)
         })
     }
 }

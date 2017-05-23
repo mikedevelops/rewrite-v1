@@ -1,8 +1,9 @@
 const marked = require('meta-marked')
-const md5 = require('md5')
+const Hashids = require('hashids')
 const fs = require('fs')
 const path = require('path')
 const util = require('../utils/fs.utils')
+const hashid = new Hashids()
 
 /**
  * create post object
@@ -12,6 +13,8 @@ const util = require('../utils/fs.utils')
  */
 module.exports.createPostObject = (filename, content) => {
     const { meta, html, markdown } = marked(content)
+    const slug = module.exports.createPostSlug(meta.title)
+    const id = module.exports.createPostId(slug)
 
     if (!meta.title) {
         throw new Error('No post title found in metadata')
@@ -31,13 +34,14 @@ module.exports.createPostObject = (filename, content) => {
 
     return {
         file: filename,
-        title: meta.title.trim(),
-        author: meta.author.trim(),
-        lead: meta.lead.trim(),
+        title: meta.title,
+        author: meta.author,
+        lead: meta.lead,
         createdAt: module.exports.getPostDate(filename),
         lastModified: 'v2',
-        id: module.exports.createPostId(filename),
         archived: false,
+        id,
+        slug,
         html,
         markdown
     }
@@ -45,11 +49,11 @@ module.exports.createPostObject = (filename, content) => {
 
 /**
  * Create post ID
- * @param {String} title
+ * @param {String} slug
  * @returns {String} post id
  */
-module.exports.createPostId = (title) => {
-    return md5(title)
+module.exports.createPostId = (slug) => {
+    return slug
 }
 
 /**
@@ -58,7 +62,8 @@ module.exports.createPostId = (title) => {
  * @returns {String} slug
  */
 module.exports.createPostSlug = (title) => {
-    return title.replace(/[\W_]/g, '-').replace(/-{2,}/g, '-')
+    const hash = hashid.encode(Date.now())
+    return `${title.replace(/[\W_]/g, '-').replace(/-{2,}/g, '-')}-${hash}`
 }
 
 /**
@@ -90,7 +95,7 @@ module.exports.mergePostObjectArrays = (posts, modifiedPosts) => {
  * @returns {Object} updated post
  */
 module.exports.mergePostObjects = (oldPost, newPost, time = new Date()) => {
-    const readOnly = ['id', 'createdAt', 'file']
+    const readOnly = ['id', 'createdAt', 'file', 'slug']
 
     return Object.keys(oldPost).reduce((post, key) => {
         if (readOnly.find(k => k === key)) {
@@ -151,8 +156,4 @@ module.exports.writePost = (postObject, dir) => {
     }
 
     util.deepWriteSync(filePath, JSON.stringify(postObject))
-}
-
-module.exports.getPosts = (manifest) => {
-
 }
