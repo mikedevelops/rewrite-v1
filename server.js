@@ -2,12 +2,11 @@ const express = require('express')
 const path = require('path')
 const cors = require('cors')
 const winston = require('winston')
-const { getAllPosts, getPostById } = require('./server/helpers/posts.helper')
-
 const app = express()
 const PORT = process.env.PORT || 3000
 const assets = path.join(__dirname, 'www')
-const postsDirectory = path.join(__dirname, 'posts')
+
+const manifest = require('./post-manifest')
 
 // set logging level
 winston.level = process.env.LOGGING || 'info'
@@ -20,23 +19,17 @@ app.get('/', (req, res) => {
 })
 
 app.get('/api/posts', (req, res) => {
-    const posts = getAllPosts(postsDirectory)
-
-    // todo
-    // - should posts be processed and chucked on the front end as an asset with their filename as their ID
-    // - the API could potentially just return the link between processed and unprocessed posts
-    // - main problem is _how_ we know an unprocessed post is a processed post
-    // - maybe the key is the date? This will _always_ be unique
-
-    winston.log('debug', `returning ${posts.length} post(s)`)
-    res.send(posts)
+    winston.log('debug', `returning ${manifest.posts.length} post(s)`)
+    res.send(manifest.posts)
 })
 
-app.get('/api/post/:id/:post', (req, res) => {
-    const id = parseInt(req.params.id)
-    const post = getPostById(postsDirectory, id)
+// todo - measure performance of this vs "guessing" the link from the post id
 
-    winston.log('debug', `getting post ID ${id} - ${post.meta.title}`)
+app.get('/api/post/:slug', (req, res) => {
+    const { slug } = req.params
+    const post = manifest.posts.find(p => p.id === slug)
+
+    winston.log('debug', `getting post ID ${slug} - "${post.title}"`)
     res.send(post)
 })
 
