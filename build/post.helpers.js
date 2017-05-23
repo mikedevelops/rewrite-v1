@@ -3,18 +3,23 @@ const Hashids = require('hashids')
 const fs = require('fs')
 const path = require('path')
 const util = require('../utils/fs.utils')
-const hashid = new Hashids()
 
 /**
  * create post object
  * @param {String} filename
  * @param {String} content
+ * @param {Function} createPostSlug
+ * @param {Function} createPostId
+ * @param {Function} getPostDate
+ * @param {Function} hasher
  * @returns {Object} post object
  */
-module.exports.createPostObject = (filename, content) => {
+export function createPostObject (filename, content, createPostSlug, createPostId, getPostDate, hasher) {
     const { meta, html, markdown } = marked(content)
-    const slug = module.exports.createPostSlug(meta.title)
-    const id = module.exports.createPostId(slug)
+    const slug = createPostSlug(meta.title, hasher)
+    const id = createPostId(slug)
+
+    // todo - make these meta keys non case sensitive
 
     if (!meta.title) {
         throw new Error('No post title found in metadata')
@@ -37,7 +42,7 @@ module.exports.createPostObject = (filename, content) => {
         title: meta.title,
         author: meta.author,
         lead: meta.lead,
-        createdAt: module.exports.getPostDate(filename),
+        createdAt: getPostDate(filename),
         lastModified: 'v2',
         archived: false,
         id,
@@ -59,10 +64,11 @@ module.exports.createPostId = (slug) => {
 /**
  * Create post slug
  * @param {String} title
+ * @param {Function} hasher
  * @returns {String} slug
  */
-module.exports.createPostSlug = (title) => {
-    const hash = hashid.encode(Date.now())
+module.exports.createPostSlug = (title, hasher) => {
+    const hash = hasher(Date.now())
     return `${title.replace(/[\W_]/g, '-').replace(/-{2,}/g, '-')}-${hash}`
 }
 

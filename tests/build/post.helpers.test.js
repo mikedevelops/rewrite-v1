@@ -1,7 +1,6 @@
-const { describe, it, beforeEach } = require('mocha')
-const { expect } = require('chai')
+require('jest')
+
 const postHelpers = require('../../build/post.helpers')
-const proxyquire = require('proxyquire')
 const fs = require('fs')
 const rimraf = require('rimraf')
 const path = require('path')
@@ -18,16 +17,9 @@ describe('build post helpers', () => {
         fs.mkdirSync(postDir)
         fs.writeFileSync(path.join(postDir, '14-5-2017-foo.md'), postRaw, 'utf-8')
         post = fs.readFileSync(path.join(postDir, '14-5-2017-foo.md'), 'utf-8')
-        postHelpersStub = proxyquire('../../build/post.helpers', {
-            'hashids': class {
-                encode () {
-                    return 'hashid'
-                }
-            }
-        })
     })
 
-    after(() => {
+    afterEach(() => {
         rimraf.sync(postDir)
     })
 
@@ -47,79 +39,86 @@ describe('build post helpers', () => {
             slug: 'foo-hashid'
         }
 
-        it('should return a post object', () => {
-            expect(postHelpersStub.createPostObject('14-5-2017-foo.md', post)).to.deep.equal(postObject)
+        test('should return a post object', () => {
+            expect(postHelpers.createPostObject(
+                '14-5-2017-foo.md',
+                post,
+                postHelpers.createPostSlug,
+                postHelpers.createPostId,
+                postHelpers.getPostDate,
+                () => 'hasher'
+            )).toEqual(postObject)
         })
     })
 
     describe('createPostId()', () => {
-        it('should create a post ID', () => {
-            expect(postHelpersStub.createPostId('foo')).to.equal('foo')
+        test('should create a post ID', () => {
+            expect(postHelpersStub.createPostId('foo')).toBe('foo')
         })
     })
 
     describe('createPostSlug()', () => {
-        it('should create a post slug', () => {
-            expect(postHelpersStub.createPostSlug('foo bar')).to.equal('foo-bar-hashid')
-            expect(postHelpersStub.createPostSlug('foo, bar')).to.equal('foo-bar-hashid')
-            expect(postHelpersStub.createPostSlug('foo bar baz')).to.equal('foo-bar-baz-hashid')
+        test('should create a post slug', () => {
+            expect(postHelpersStub.createPostSlug('foo bar')).toBe('foo-bar-hashid')
+            expect(postHelpersStub.createPostSlug('foo, bar')).toBe('foo-bar-hashid')
+            expect(postHelpersStub.createPostSlug('foo bar baz')).toBe('foo-bar-baz-hashid')
         })
     })
 
     describe('mergePostObjectArrays()', () => {
-        const oldPosts = [{ id: 0, title: 'foo' }, { id: 1, title: 'bar'}, { id: 2, title: 'post' }]
-        const newPosts = [{ id: 1, title: 'baz'}, { id: 2, title: 'baz' }]
+        const oldPosts = [{ id: 0, title: 'foo' }, { id: 1, title: 'bar' }, { id: 2, title: 'post' }]
+        const newPosts = [{ id: 1, title: 'baz' }, { id: 2, title: 'baz' }]
 
-        it('should merge old posts and modified posts', () => {
-            expect(postHelpers.mergePostObjectArrays(oldPosts, newPosts)).to.deep.equal([
+        test('should merge old posts and modified posts', () => {
+            expect(postHelpers.mergePostObjectArrays(oldPosts, newPosts)).toEqual([
                 { id: 0, title: 'foo' }, { id: 1, title: 'baz' }, { id: 2, title: 'baz' }
             ])
         })
 
-        it('should handle empty values', () => {
-            expect(postHelpers.mergePostObjectArrays([], newPosts)).to.deep.equal(newPosts)
+        test('should handle empty values', () => {
+            expect(postHelpers.mergePostObjectArrays([], newPosts)).toEqual(newPosts)
         })
     })
 
     describe('getPostDate()', () => {
-        it('should create a custom date object from a post name', () => {
+        test('should create a custom date object from a post name', () => {
             const expected = new Date(1988, 3, 3)
 
-            expect(postHelpers.getPostDate('03-04-1988-foo')).to.deep.equal(expected)
-            expect(postHelpers.getPostDate('3-4-1988-foo')).to.deep.equal(expected)
+            expect(postHelpers.getPostDate('03-04-1988-foo')).toEqual(expected)
+            expect(postHelpers.getPostDate('3-4-1988-foo')).toEqual(expected)
         })
     })
 
     describe('mergePostObjects()', () => {
-        it('should merge 2 post objects', () => {
+        test('should merge 2 post objects', () => {
             const oldPost = { id: 'foo', title: 'foo', createdAt: 123 }
             const newPost = { id: 'foo', title: 'bar', createdAt: 123 }
 
-            expect(postHelpers.mergePostObjects(oldPost, newPost)).to.deep.equal(newPost)
+            expect(postHelpers.mergePostObjects(oldPost, newPost)).toEqual(newPost)
         })
 
-        it('should respect read-only properties', () => {
+        test('should respect read-only properties', () => {
             const oldPost = { id: 'foo', title: 'foo', createdAt: 123 }
             const newPost = { id: 'bar', title: 'bar', createdAt: 456 }
 
-            expect(postHelpers.mergePostObjects(oldPost, newPost)).to.deep.equal({
+            expect(postHelpers.mergePostObjects(oldPost, newPost)).toEqual({
                 id: 'foo', title: 'bar', createdAt: 123
             })
         })
 
-        it('should update last modified', () => {
+        test('should update last modified', () => {
             const time = new Date()
             const oldPost = { id: 'foo', title: 'foo', createdAt: 123, lastModified: 123 }
             const newPost = { id: 'bar', title: 'bar', createdAt: 456 }
 
-            expect(postHelpers.mergePostObjects(oldPost, newPost, time)).to.deep.equal({
+            expect(postHelpers.mergePostObjects(oldPost, newPost, time)).toEqual({
                 id: 'foo', title: 'bar', createdAt: 123, lastModified: time
             })
         })
     })
 
     describe('writePost()', () => {
-        it('should write a post to file', () => {
+        test('should write a post to file', () => {
             const postObject = {
                 id: 'foo',
                 title: 'foo',
@@ -130,7 +129,7 @@ describe('build post helpers', () => {
 
             const post = JSON.parse(fs.readFileSync(path.join(postDir, 'foo.json'), 'utf-8'))
 
-            expect(post).to.deep.equal(postObject)
+            expect(post).toEqual(postObject)
         })
     })
 })
