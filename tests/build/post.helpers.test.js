@@ -19,7 +19,11 @@ describe('build post helpers', () => {
         fs.writeFileSync(path.join(postDir, '14-5-2017-foo.md'), postRaw, 'utf-8')
         post = fs.readFileSync(path.join(postDir, '14-5-2017-foo.md'), 'utf-8')
         postHelpersStub = proxyquire('../../build/post.helpers', {
-            'md5': id => id
+            'hashids': class {
+                encode () {
+                    return 'hashid'
+                }
+            }
         })
     })
 
@@ -33,13 +37,14 @@ describe('build post helpers', () => {
             title: 'foo',
             author: 'bar',
             file: '14-5-2017-foo.md',
-            id: '14-5-2017-foo.md',
+            id: 'foo-hashid',
             lead: 'foo',
             createdAt: time,
             lastModified: 'v2',
             html: '',
             archived: false,
-            markdown: ''
+            markdown: '',
+            slug: 'foo-hashid'
         }
 
         it('should return a post object', () => {
@@ -54,10 +59,10 @@ describe('build post helpers', () => {
     })
 
     describe('createPostSlug()', () => {
-        it('should create a post ID', () => {
-            expect(postHelpers.createPostSlug('foo bar')).to.equal('foo-bar')
-            expect(postHelpers.createPostSlug('foo, bar')).to.equal('foo-bar')
-            expect(postHelpers.createPostSlug('foo bar baz')).to.equal('foo-bar-baz')
+        it('should create a post slug', () => {
+            expect(postHelpersStub.createPostSlug('foo bar')).to.equal('foo-bar-hashid')
+            expect(postHelpersStub.createPostSlug('foo, bar')).to.equal('foo-bar-hashid')
+            expect(postHelpersStub.createPostSlug('foo bar baz')).to.equal('foo-bar-baz-hashid')
         })
     })
 

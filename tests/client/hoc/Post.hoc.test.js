@@ -27,7 +27,7 @@ describe('<PostHoc/>', () => {
         expect(hoc.find('.loading').length).to.equal(1)
     })
 
-    it('should get a post when mounted', () => {
+    it('should apiGET a post when mounted', () => {
         expect(getPost.calledOnce).to.be.true
     })
 

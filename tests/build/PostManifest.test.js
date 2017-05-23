@@ -10,6 +10,7 @@ describe('PostManifest', () => {
     let postManifest
     let manifest
     let postDir
+    let compiler
     const testPost = `---\ntitle: foo\nauthor: bar\nlead: baz\n...`
     const time = new Date(2017, 4, 15)
     const vanillaManifest = {
@@ -25,6 +26,7 @@ describe('PostManifest', () => {
         fs.mkdirSync(postDir)
         fs.writeFileSync(path.join(postDir, '13-5-2017-foo.md'), testPost, 'utf-8')
         manifest = path.join(postDir, 'post-manifest.json')
+        compiler = { plugin: (foo, next) => next(), outputPath: postDir }
     })
 
     afterEach(() => {
@@ -68,34 +70,48 @@ describe('PostManifest', () => {
             })
             const stubbedManifest = new Stub({ posts: postDir, manifest }, time, '0.0.0')
 
-            expect(stubbedManifest.getModifiedPosts().length).to.equal(1)
+            stubbedManifest.apply(compiler)
+            expect(stubbedManifest.modifiedPosts.length).to.equal(1)
         })
 
         it('should ignore posts that have not been created since the last manifest was published', () => {
             const Stub = proxyquire('../../build/postManifest', {
                 './post.helpers': {
                     createPostObject: (post, file) => ({
+                        file: '13-5-2017-foo.md',
                         createdAt: new Date(1990)
+                    })
+                },
+                'fs': {
+                    statSync: () => ({
+                        mtime: new Date(1990)
                     })
                 }
             })
             const stubbedManifest = new Stub({ posts: postDir, manifest }, time, '0.0.0')
 
-            stubbedManifest.manifest.posts.push({ file: '13-5-2017-foo.md', createdAt: new Date(1990) })
-            expect(stubbedManifest.getModifiedPosts().length).to.equal(0)
+            stubbedManifest.manifest.posts.push({ file: '13-5-2017-foo.md' })
+            stubbedManifest.apply(compiler)
+            expect(stubbedManifest.modifiedPosts.length).to.equal(0)
         })
     })
 
     describe('writeManifest()', () => {
         it('should write the new manifest to file', () => {
-            const Stub = proxyquire('../../build/PostManifest', { 'fs': { 'statSync': () => ({ mtime: 0 }) } })
+            const Stub = proxyquire('../../build/PostManifest', {
+                'fs': {
+                    statSync: () => ({
+                        mtime: 0
+                    })
+                }
+            })
 
             postManifest = new Stub({ posts: postDir, manifest }, time, '0.0.0')
-            postManifest.writeManifest()
+            postManifest.writeManifest({ foo: 'bar' })
 
             const writtenManifest = JSON.parse(fs.readFileSync(manifest, 'utf-8'))
 
-            expect(writtenManifest.posts.length).to.equal(1)
+            expect(writtenManifest.foo).to.equal('bar')
         })
     })
 
@@ -130,7 +146,6 @@ describe('PostManifest', () => {
             const Stub = proxyquire('../../build/PostManifest', {
                 './post.helpers': { createPostObject: () => post }
             })
-            const compiler = { plugin: (foo, next) => next() }
             const manifest = new Stub({
                 posts: postDir,
                 manifest: path.join(postDir, 'post-manifest.json')
@@ -182,7 +197,7 @@ describe('PostManifest', () => {
                 ]
             })
 
-            existingManifest.apply({ plugin: (_, cb) => cb() })
+            existingManifest.apply(compiler)
 
             const newManifest = fs.readFileSync(path.join(postDir, 'post-manifest.json'))
 
@@ -191,7 +206,7 @@ describe('PostManifest', () => {
     })
     it('should modify an existing post if it has been updated', () => {
         const manifestPublishDate = new Date(2017, 4, 1)
-        const compiler = { plugin: (foo, next) => next() }
+
         const updatedPost = `---\ntitle: foo\nauthor: bar\nlead: baz\n...`
         const firstManifest = {
             'createdAt': manifestPublishDate,
