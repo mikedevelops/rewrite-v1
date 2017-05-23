@@ -7,10 +7,16 @@ const apiBase = 'http://localhost:3000/api/'
  * @param  {String} apiPath
  * @return {Promise}
  */
-export function apiGet (apiPath) {
+export function apiGET (apiPath) {
+    const start = performance.now()
+    const path = apiBase + apiPath
+
     return new Promise((resolve, reject) => {
-        request(apiBase + apiPath, 'GET', { 'Content-Type': 'application/json' })
-        .then(res => resolve(res))
-        .catch(err => reject(err))
+        request(path, 'GET')
+            .then(res => {
+                console.log(`Request time | ${path} | ${(performance.now() - start).toFixed(2)}ms`)
+                resolve(res)
+            })
+            .catch(err => reject(err))
     })
 }

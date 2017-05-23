@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PostList from 'Components/PostList'
-import { apiGet } from 'Helpers/api.helper'
+import { apiGET } from 'Helpers/api.helper'
 
 export default class PostListHoc extends Component {
     constructor () {
@@ -20,12 +20,17 @@ export default class PostListHoc extends Component {
      * @return {Array} posts
      */
     getPosts () {
-        apiGet('posts')
+        apiGET('posts')
             .then(posts => {
-                this.setState({ posts: JSON.parse(posts) })
-            })
-            .catch(err => {
-                throw new Error('could not get posts -> ' + err)
+                const parsedPosts = JSON.parse(posts, (key, value) => {
+                    if (key === 'createdAt') {
+                        return new Date(value)
+                    } else {
+                        return value
+                    }
+                })
+
+                this.setState({ posts: parsedPosts })
             })
     }
 
