@@ -1,44 +1,41 @@
-import { expect } from 'chai'
-import { describe, it } from 'mocha'
-import * as dateHelpers from 'Helpers/date.helper'
+require('jest')
 
-describe('date helpers', () => {
+const dateUtils = require('../../utils/date.utils')
+
+describe('Date utils', () => {
     describe('normalizeDate()', () => {
-        it('should return a date object', () => {
-            const { normalizeDate } = dateHelpers
-            const dateObj = normalizeDate(new Date(Date.now()))
-            const dateInt = normalizeDate(Date.now())
-            expect(dateObj).to.be.a('date')
-            expect(dateInt).to.be.a('date')
+        test('should return a date object', () => {
+            const dateObj = dateUtils.normalizeDate(new Date(Date.now()))
+            const dateInt = dateUtils.normalizeDate(Date.now())
+
+            expect(dateObj).toBeInstanceOf(Date)
+            expect(dateInt).toBeInstanceOf(Date)
         })
     })
 
     describe('formatDateSmart()', () => {
-        const { formatDateSmart, normalizeDate } = dateHelpers
-        const today = normalizeDate(1490913628756)
-        const yesterday = normalizeDate(1490913628756 - 8.64e+7)
-        const other = normalizeDate(1490913628756 - 1.728e+8)
+        const today = dateUtils.normalizeDate(1490913628756)
+        const yesterday = dateUtils.normalizeDate(1490913628756 - 8.64e+7)
+        const other = dateUtils.normalizeDate(1490913628756 - 1.728e+8)
 
-        it('should return today', () => {
-            expect(formatDateSmart(today, today)).to.equal('today')
+        test('should return today', () => {
+            expect(dateUtils.formatDateSmart(today, today)).toBe('today')
         })
 
-        it('should return yesterday', () => {
-            expect(formatDateSmart(yesterday, today)).to.equal('yesterday')
+        test('should return yesterday', () => {
+            expect(dateUtils.formatDateSmart(yesterday, today)).toBe('yesterday')
         })
 
-        it('should return a formatted date', () => {
-            expect(formatDateSmart(other, today))
-                .to.equal('Tuesday, 28 Mar 2017')
+        test('should return a formatted date', () => {
+            expect(dateUtils.formatDateSmart(other, today)).toBe('Tuesday, 28 Mar 2017')
         })
     })
 
     describe('formatDate()', () => {
-        const { normalizeDate, formatDate } = dateHelpers
-        const today = normalizeDate(Date.now())
+        const today = dateUtils.normalizeDate(Date.now())
 
-        it('should return a smart format date', () => {
-            expect(formatDate(today, 'smart')).to.equal('today')
+        test('should return a smart format date', () => {
+            expect(dateUtils.formatDate(today, 'smart')).toBe('today')
         })
     })
 })

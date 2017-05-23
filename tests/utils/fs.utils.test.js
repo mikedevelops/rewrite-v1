@@ -5,7 +5,7 @@ const path = require('path')
 const fs = require('fs')
 const rimraf = require('rimraf')
 
-describe('fs utils', () => {
+describe('File system utils', () => {
     const base = path.join(__dirname, 'fs')
 
     beforeEach(() => {

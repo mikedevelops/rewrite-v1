@@ -1,5 +1,11 @@
-import { describe } from 'mocha'
+require('jest')
 
-describe('string utils', () => {
-    describe('')
+const stringUtils = require('../../utils/string.utils')
+
+describe('String utils', () => {
+    describe('capatalize()', () => {
+        test('should capatalize a string', () => {
+            expect(stringUtils.capatalize('foobar')).toBe('Foobar')
+        })
+    })
 })
