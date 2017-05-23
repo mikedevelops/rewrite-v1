@@ -1,5 +1,4 @@
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /**
@@ -13,8 +12,8 @@ export function normalizeDate (date) {
 
 /**
  * Format date 'smart' e.g Today || Yesterday || Monday, 5 March 2017
- * @param  {Object} date
- * @param  {Object} default to today
+ * @param  {Date} date
+ * @param  {Date} today
  * @return {String}
  */
 export function formatDateSmart (date, today = new Date()) {
