@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const postHelpers = require('./post.helpers')
 const utils = require('../utils/version.util')
+const Hashid = require('hashids')
 const defaults = {
     posts: path.resolve(__dirname, '../', 'posts'),
     manifest: path.resolve(__dirname, '../post-manifest.json')
@@ -51,10 +52,17 @@ class PostManifest {
 
         return posts.filter(post => path.extname(post) === '.md')
             .reduce((modPosts, post) => {
-                const postFile = fs.readFileSync(path.join(this.options.posts, post), 'utf-8')
+                const content = fs.readFileSync(path.join(this.options.posts, post), 'utf-8')
                 const { mtime } = fs.statSync(path.join(this.options.posts, post), 'utf-8')
                 const existingPost = this.manifest.posts.find(existing => existing.file === post)
-                const newPost = postHelpers.createPostObject(post, postFile)
+                const newPost = postHelpers.createPostObject(
+                    post,
+                    content,
+                    postHelpers.createPostSlug,
+                    postHelpers.createPostId,
+                    postHelpers.getPostDate,
+                    new Hashid()
+                )
 
                 if (!existingPost) {
                     modPosts.push(newPost)

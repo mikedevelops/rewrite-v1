@@ -1,5 +1,4 @@
 const marked = require('meta-marked')
-const Hashids = require('hashids')
 const fs = require('fs')
 const path = require('path')
 const util = require('../utils/fs.utils')
@@ -14,7 +13,7 @@ const util = require('../utils/fs.utils')
  * @param {Function} hasher
  * @returns {Object} post object
  */
-export function createPostObject (filename, content, createPostSlug, createPostId, getPostDate, hasher) {
+module.exports.createPostObject = (filename, content, createPostSlug, createPostId, getPostDate, hasher) => {
     const { meta, html, markdown } = marked(content)
     const slug = createPostSlug(meta.title, hasher)
     const id = createPostId(slug)
@@ -68,7 +67,7 @@ module.exports.createPostId = (slug) => {
  * @returns {String} slug
  */
 module.exports.createPostSlug = (title, hasher) => {
-    const hash = hasher(Date.now())
+    const hash = hasher.encode(Date.now())
     return `${title.replace(/[\W_]/g, '-').replace(/-{2,}/g, '-')}-${hash}`
 }
 
