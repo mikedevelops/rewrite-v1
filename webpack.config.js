@@ -2,6 +2,7 @@ const path = require('path')
 const Html = require('html-webpack-plugin')
 const Manifest = require('./build/PostManifest')
 const { version } = require('./package.json')
+const postHelpers = require('./build/post.helpers')
 const src = path.join(__dirname, 'src')
 const www = path.join(__dirname, 'www')
 const posts = process.env.BENCHMARK !== 'true'
@@ -22,7 +23,7 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['env', 'es2015', 'react']
+                        presets: ['es2015', 'react']
                     }
                 }
             }
@@ -48,9 +49,12 @@ module.exports = {
     },
     plugins: [
         new Html({ template: path.join(src, 'index.ejs') }),
-        new Manifest({
-            posts: posts,
-            manifest: path.join(__dirname, 'post-manifest.json')
-        }, new Date(), version, process.env.NODE_ENV)
+        new Manifest(
+            { posts: posts, manifest: path.join(__dirname, 'post-manifest.json') },
+            new Date(),
+            version,
+            process.env.NODE_ENV,
+            postHelpers
+        )
     ]
 }

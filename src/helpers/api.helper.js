@@ -1,4 +1,4 @@
-import { request } from 'Helpers/xhr.helper'
+import { request } from '../helpers/xhr.helper'
 
 const apiBase = 'http://localhost:3000/api/'
 
@@ -8,15 +8,10 @@ const apiBase = 'http://localhost:3000/api/'
  * @return {Promise}
  */
 export function apiGET (apiPath) {
-    const start = performance.now()
     const path = apiBase + apiPath
-
     return new Promise((resolve, reject) => {
         request(path, 'GET')
-            .then(res => {
-                console.log(`Request time | ${path} | ${(performance.now() - start).toFixed(2)}ms`)
-                resolve(res)
-            })
+            .then(res => resolve(res))
             .catch(err => reject(err))
     })
 }

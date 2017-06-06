@@ -1,6 +1,5 @@
 const path = require('path')
 const fs = require('fs')
-const postHelpers = require('./post.helpers')
 const utils = require('../utils/version.util')
 const Hashid = require('hashids')
 const defaults = {
@@ -8,9 +7,19 @@ const defaults = {
     manifest: path.resolve(__dirname, '../post-manifest.json')
 }
 
+process.env.TZ = 'London/Europe'
+
 class PostManifest {
-    constructor (options, date, appVersion, env = 'development') {
+    /**
+     * @param {Object} options
+     * @param {Date} date
+     * @param {String} appVersion
+     * @param {String} env
+     * @param {Object} postHelpers
+     */
+    constructor (options, date, appVersion, env = 'development', postHelpers) {
         this.env = env
+        this.postHelpers = postHelpers
         this.appVersion = appVersion
         this.options = Object.assign({}, defaults, options)
         this.time = date
@@ -55,19 +64,19 @@ class PostManifest {
                 const content = fs.readFileSync(path.join(this.options.posts, post), 'utf-8')
                 const { mtime } = fs.statSync(path.join(this.options.posts, post), 'utf-8')
                 const existingPost = this.manifest.posts.find(existing => existing.file === post)
-                const newPost = postHelpers.createPostObject(
+                const newPost = this.postHelpers.createPostObject(
                     post,
                     content,
-                    postHelpers.createPostSlug,
-                    postHelpers.createPostId,
-                    postHelpers.getPostDate,
+                    this.postHelpers.createPostSlug,
+                    this.postHelpers.createPostId,
+                    this.postHelpers.getPostDate,
                     new Hashid()
                 )
 
                 if (!existingPost) {
                     modPosts.push(newPost)
                 } else if (mtime > Date.parse(this.manifest.lastPublished)) {
-                    modPosts.push(postHelpers.mergePostObjects(existingPost, newPost, this.time))
+                    modPosts.push(this.postHelpers.mergePostObjects(existingPost, newPost, this.time))
                 }
 
                 return modPosts
@@ -101,17 +110,20 @@ class PostManifest {
         compiler.plugin('done', () => {
             this.modifiedPosts = this.getModifiedPosts()
             this.newVersion = this.env === 'production' ? this.bumpManifestVersion() : this.manifest.version
-            this.newManifest = Object.assign({}, this.manifest,
-                {
-                    app: this.appVersion,
-                    version: this.newVersion,
-                    lastPublished: this.env === 'production' ? this.time : this.manifest.lastPublished,
-                    posts: postHelpers.mergePostObjectArrays(this.manifest.posts, this.modifiedPosts)
-                }
-            )
-            this.newManifest.posts.forEach(post => {
-                postHelpers.writePost(post, path.join(compiler.outputPath, 'posts'))
+            this.newManifest = Object.assign({}, this.manifest, {
+                app: this.appVersion,
+                version: this.newVersion,
+                lastPublished: this.env === 'production' ? this.time : this.manifest.lastPublished,
+                posts: this.postHelpers.mergePostObjectArrays(this.manifest.posts, this.modifiedPosts)
             })
+            this.newManifest.posts = this.newManifest.posts.reduce((posts, post) => {
+                this.postHelpers.writePost(post, path.join(compiler.outputPath, 'posts'))
+                // removing html and markdown before writing to manifest
+                delete post.html
+                delete post.markdown
+                posts.push(post)
+                return posts
+            }, [])
 
             this.writeManifest(this.newManifest)
         })

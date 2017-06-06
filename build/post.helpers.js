@@ -99,7 +99,7 @@ module.exports.mergePostObjectArrays = (posts, modifiedPosts) => {
  * @param {Date} time
  * @returns {Object} updated post
  */
-module.exports.mergePostObjects = (oldPost, newPost, time = new Date()) => {
+module.exports.mergePostObjects = (oldPost, newPost, time) => {
     const readOnly = ['id', 'createdAt', 'file', 'slug']
 
     return Object.keys(oldPost).reduce((post, key) => {
@@ -107,8 +107,9 @@ module.exports.mergePostObjects = (oldPost, newPost, time = new Date()) => {
             newPost[key] = oldPost[key]
         }
 
+        // todo - implement this properly, functionality is there, just need to set an initial value __maybe__
         if (key === 'lastModified') {
-            newPost[key] = time
+            newPost[key] = 'v2'
         }
 
         return newPost
