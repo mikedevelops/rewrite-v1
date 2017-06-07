@@ -38,7 +38,7 @@ describe('build post helpers', () => {
             id: 'foo-hasher',
             lead: 'foo',
             createdAt: time,
-            lastModified: 'v2',
+            lastModified: time,
             html: '',
             archived: false,
             markdown: '',
@@ -112,16 +112,15 @@ describe('build post helpers', () => {
             })
         })
 
-        // todo - make this work and stop avoiding it...
-        // test('should update last modified', () => {
-        //     const time = new Date()
-        //     const oldPost = { id: 'foo', title: 'foo', createdAt: 123, lastModified: 123 }
-        //     const newPost = { id: 'bar', title: 'bar', createdAt: 456 }
-        //
-        //     expect(postHelpers.mergePostObjects(oldPost, newPost, time)).toEqual({
-        //         id: 'foo', title: 'bar', createdAt: 123, lastModified: time
-        //     })
-        // })
+        test('should update last modified', () => {
+            const time = new Date()
+            const oldPost = { id: 'foo', title: 'foo', createdAt: 123, lastModified: 123 }
+            const newPost = { id: 'bar', title: 'bar', createdAt: 456 }
+
+            expect(postHelpers.mergePostObjects(oldPost, newPost, time)).toEqual({
+                id: 'foo', title: 'bar', createdAt: 123, lastModified: time
+            })
+        })
     })
 
     describe('writePost()', () => {

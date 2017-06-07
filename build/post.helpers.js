@@ -17,6 +17,7 @@ module.exports.createPostObject = (filename, content, createPostSlug, createPost
     const { meta, html, markdown } = marked(content)
     const slug = createPostSlug(meta.title, hasher)
     const id = createPostId(slug)
+    const postDate = getPostDate(filename)
 
     // todo - make these meta keys non case sensitive
 
@@ -41,8 +42,8 @@ module.exports.createPostObject = (filename, content, createPostSlug, createPost
         title: meta.title,
         author: meta.author,
         lead: meta.lead,
-        createdAt: getPostDate(filename),
-        lastModified: 'v2',
+        createdAt: postDate,
+        lastModified: postDate,
         archived: false,
         id,
         slug,
@@ -78,6 +79,8 @@ module.exports.createPostSlug = (title, hasher) => {
  * @returns {Array}
  */
 module.exports.mergePostObjectArrays = (posts, modifiedPosts) => {
+    console.log('modified posts: ', modifiedPosts)
+
     modifiedPosts.forEach(post => {
         const match = posts.find(p => p.id === post.id)
 
@@ -107,9 +110,8 @@ module.exports.mergePostObjects = (oldPost, newPost, time) => {
             newPost[key] = oldPost[key]
         }
 
-        // todo - implement this properly, functionality is there, just need to set an initial value __maybe__
         if (key === 'lastModified') {
-            newPost[key] = 'v2'
+            newPost[key] = time
         }
 
         return newPost

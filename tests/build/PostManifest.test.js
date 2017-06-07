@@ -16,8 +16,8 @@ describe('PostManifest', () => {
     let manifest
     let postDir
     let compiler
+    let time = new Date(2017, 4, 15)
     const testPost = `---\ntitle: foo\nauthor: bar\nlead: baz\n...`
-    const time = new Date(2017, 4, 15)
     const vanillaManifest = {
         createdAt: time,
         lastPublished: time,
@@ -59,8 +59,23 @@ describe('PostManifest', () => {
 
     describe('getModifiedPosts()', () => {
         test('should return posts that have been created since the last manifest was published', () => {
-            postManifest.apply(compiler)
-            expect(postManifest.modifiedPosts.length).toEqual(1)
+            expect(postManifest.getModifiedPosts(fs.readdirSync(postDir)).length).toBe(1)
+        })
+
+        test('should ignore posts that have not bee modified', () => {
+            postManifest.manifest = {
+                lastPublished: new Date(),
+                posts: [{ file: '13-5-2017-foo.md' }]
+            }
+            expect(postManifest.getModifiedPosts(fs.readdirSync(postDir)).length).toBe(0)
+        })
+
+        test('should return posts that have been modified since the last manifest', () => {
+            postManifest.manifest = {
+                lastPublished: new Date(1988, 9, 3),
+                posts: [{ file: '13-5-2017-foo.md' }]
+            }
+            expect(postManifest.getModifiedPosts(fs.readdirSync(postDir)).length).toBe(1)
         })
     })
 
@@ -99,7 +114,7 @@ describe('PostManifest', () => {
                     createdAt: '2017-05-13T00:00:00.000Z',
                     file: '13-5-2017-foo.md',
                     id: 'foo-hash',
-                    lastModified: 'v2',
+                    lastModified: '2017-05-13T00:00:00.000Z',
                     lead: 'baz',
                     slug: 'foo-hash',
                     title: 'foo'
@@ -113,9 +128,9 @@ describe('PostManifest', () => {
         test('should add a new post to an existing manifest', () => {
             const newPost = `---\ntitle: new post\nauthor: new author\nlead: new post\n...`
 
-            const expected = {
-                createdAt: '2017-05-15T00:00:00.000Z',
-                lastPublished: '2017-05-15T00:00:00.000Z',
+            postManifest.manifest = {
+                createdAt: time,
+                lastPublished: time,
                 app: '0.0.0',
                 version: '0.1.0',
                 posts: [
@@ -125,7 +140,27 @@ describe('PostManifest', () => {
                         createdAt: '2017-05-13T00:00:00.000Z',
                         file: '13-5-2017-foo.md',
                         id: 'foo-hash',
-                        lastModified: 'v2',
+                        lastModified: '2017-05-13T00:00:00.000Z',
+                        lead: 'baz',
+                        slug: 'foo-hash',
+                        title: 'foo'
+                    }
+                ]
+            }
+
+            const expected = {
+                createdAt: '2017-05-15T00:00:00.000Z',
+                lastPublished: '2017-05-15T00:00:00.000Z',
+                app: '0.0.0',
+                version: '0.2.0',
+                posts: [
+                    {
+                        archived: false,
+                        author: 'bar',
+                        createdAt: '2017-05-13T00:00:00.000Z',
+                        file: '13-5-2017-foo.md',
+                        id: 'foo-hash',
+                        lastModified: '2017-05-15T00:00:00.000Z',
                         lead: 'baz',
                         slug: 'foo-hash',
                         title: 'foo'
@@ -136,7 +171,7 @@ describe('PostManifest', () => {
                         createdAt: '2017-05-14T00:00:00.000Z',
                         file: '14-5-2017-bar.md',
                         id: 'new-post-hash',
-                        lastModified: 'v2',
+                        lastModified: '2017-05-14T00:00:00.000Z',
                         lead: 'new post',
                         slug: 'new-post-hash',
                         title: 'new post'
@@ -144,7 +179,6 @@ describe('PostManifest', () => {
                 ]
             }
 
-            postManifest.apply(compiler)
             fs.writeFileSync(path.join(postDir, '14-5-2017-bar.md'), newPost, 'utf-8')
             postManifest.apply(compiler)
             expect(JSON.parse(fs.readFileSync(path.join(postDir, 'post-manifest.json'), 'utf-8'))).toEqual(expected)
@@ -152,6 +186,48 @@ describe('PostManifest', () => {
     })
     test('should modify an existing post if it has been updated', () => {
         // todo - modified date tests
+        postManifest.manifest = {
+            createdAt: time,
+            lastPublished: time,
+            app: '0.0.0',
+            version: '0.1.0',
+            posts: [
+                {
+                    archived: false,
+                    author: 'bar',
+                    createdAt: '2017-05-13T00:00:00.000Z',
+                    file: '13-5-2017-foo.md',
+                    id: 'foo-hash',
+                    lastModified: '2017-05-13T00:00:00.000Z',
+                    lead: 'baz',
+                    slug: 'foo-hash',
+                    title: 'foo'
+                }
+            ]
+        }
+
+        const expected = {
+            createdAt: '2017-05-15T00:00:00.000Z',
+            lastPublished: '2017-05-15T00:00:00.000Z',
+            app: '0.0.0',
+            version: '0.2.0',
+            posts: [
+                {
+                    archived: false,
+                    author: 'bar',
+                    createdAt: '2017-05-13T00:00:00.000Z',
+                    file: '13-5-2017-foo.md',
+                    id: 'foo-hash',
+                    lastModified: '2017-05-15T00:00:00.000Z',
+                    lead: 'baz',
+                    slug: 'foo-hash',
+                    title: 'foo'
+                }
+            ]
+        }
+
+        postManifest.apply(compiler)
+        expect(JSON.parse(fs.readFileSync(path.join(postDir, 'post-manifest.json'), 'utf-8'))).toEqual(expected)
     })
 
     // todo - env related code

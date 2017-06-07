@@ -31,11 +31,23 @@ describe('Date utils', () => {
         })
     })
 
+    describe('formatSateStandard()', () => {
+        const today = new Date(2017, 5, 7)
+
+        test('should return a standard date format', () => {
+            expect(dateUtils.formatDateStandard(today)).toBe('Wednesday, 7 Jun 2017')
+        })
+    })
+
     describe('formatDate()', () => {
-        const today = dateUtils.normalizeDate(Date.now())
+        const today = new Date(2017, 5, 1)
 
         test('should return a smart format date', () => {
-            expect(dateUtils.formatDate(today, 'smart')).toBe('today')
+            expect(dateUtils.formatDate(today, 'smart')).toBe('Thursday, 1 Jun 2017')
+        })
+
+        test('should return a standard format date', () => {
+            expect(dateUtils.formatDate(today)).toBe('Thursday, 1 Jun 2017')
         })
     })
 })

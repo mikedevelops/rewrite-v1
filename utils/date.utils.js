@@ -1,5 +1,5 @@
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /**
  * Normalize date format and return a Date object
@@ -30,8 +30,22 @@ export function formatDateSmart (date, today = new Date()) {
     } else if (todayDate === (dayInMonth + 1) && todayMonth === month && todayYear === year) {
         return 'yesterday'
     } else {
-        return `${days[day]}, ${dayInMonth} ${months[month]} ${year}`
+        return `${days[day]}, ${dayInMonth} ${monthsShort[month]} ${year}`
     }
+}
+
+/**
+ * Format date in a "standard" way "Monday, 3 Oct 1988"
+ * @param date
+ * @returns {string}
+ */
+export function formatDateStandard (date) {
+    const day = date.getDay()
+    const month = date.getMonth()
+    const year = date.getFullYear()
+    const dayInMonth = date.getDate()
+
+    return `${days[day]}, ${dayInMonth} ${monthsShort[month]} ${year}`
 }
 
 /**
@@ -40,10 +54,12 @@ export function formatDateSmart (date, today = new Date()) {
  * @param  {String} format
  * @return {String}
  */
-export function formatDate (date, format) {
+export function formatDate (date, format = '') {
     date = normalizeDate(date)
     switch (format) {
     case 'smart':
         return formatDateSmart(date)
+    default:
+        return formatDateStandard(date)
     }
 }

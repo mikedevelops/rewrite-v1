@@ -56,9 +56,7 @@ class PostManifest {
      * Get posts that have been modified since the last published manifest
      * @returns {Array} posts
      */
-    getModifiedPosts () {
-        const posts = fs.readdirSync(this.options.posts)
-
+    getModifiedPosts (posts) {
         return posts.filter(post => path.extname(post) === '.md')
             .reduce((modPosts, post) => {
                 const content = fs.readFileSync(path.join(this.options.posts, post), 'utf-8')
@@ -108,7 +106,7 @@ class PostManifest {
      */
     apply (compiler) {
         compiler.plugin('done', () => {
-            this.modifiedPosts = this.getModifiedPosts()
+            this.modifiedPosts = this.getModifiedPosts(fs.readdirSync(this.options.posts))
             this.newVersion = this.env === 'production' ? this.bumpManifestVersion() : this.manifest.version
             this.newManifest = Object.assign({}, this.manifest, {
                 app: this.appVersion,
