@@ -4,8 +4,9 @@
 const ipsum = require('../utils/ipsum')
 const fs = require('fs')
 const path = require('path')
-const posts = path.resolve(__dirname, '../posts')
-const total = 25
+const program = require('commander')
+const inquirer = require('inquirer')
+const postsDir = path.resolve(__dirname, '../posts')
 
 /**
  * Create fixture post content
@@ -37,9 +38,24 @@ function getPostTitle (index) {
     return `7-6-2017-test-${index}.md`
 }
 
-for (let i = 0; i < total; i++) {
-    writePost(path.join(posts, getPostTitle(i)), createPost(`test post ${i}`, ipsum))
-}
+const questions = [
+    {
+        type: 'input',
+        name: 'posts',
+        message: 'Number of posts to create',
+        default: 10
+    }
+]
 
-console.log('post fixtures created')
-process.exit(0)
+program
+    .version('0.1.0')
+    .parse(process.argv)
+
+inquirer.prompt(questions).then(answers => {
+    for (let i = 0; i < answers.posts; i++) {
+        writePost(
+            path.join(postsDir, getPostTitle(i)),
+            createPost(`test post ${i}`, ipsum)
+        )
+    }
+})
